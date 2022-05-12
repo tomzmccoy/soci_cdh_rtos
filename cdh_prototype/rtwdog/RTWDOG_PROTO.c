@@ -45,19 +45,18 @@ void idleTaskRTWDOGRefreshTest(void);
  * Unlock sequence written to CNT register, must be within 16 bus clocks at any time after
  * RTWDOG has been configured
  */
-
 void setUpWDOG(void) {
 	DisableInterrupts; // disable global interrupt
 	RTWDOG_CNT = UNLOCK_RTWDOG; // unlock the RTWDOG
-	// while (RTWDOG_CS[ULK] == 0); // wait until registers are unlocked
-	WDOG_TOVAL = 256; // Set the timeout value
-	WDOG_CS = ENABLE_WATCHDOG;
-	// while (WDOG_CS[RCS] == 0); // wait until new configuration takes effect
+	// while (RTWDOG_CS[ULK] == 0); // wait until registers are unlocked              * not too sure what this does?
+	WDOG_TOVAL = 256; // Set the timeout value                                        * Need to change to be what the team wants/needs
+	WDOG_CS = ENABLE_WATCHDOG; // unlock the RTWDOG with desired configuration
+	// while (WDOG_CS[RCS] == 0); // wait until new configuration takes effect        * not too sure what this does?
 	EnableInterrupts; // re-enable the global interrupt
 }
 
 /**
- * Function that is called to refresh the watchdog timer if the task passes down the appropriate flag
+ * Function that is called to refresh the RTWDOG timer if the task passes down the appropriate flag
  */
 void refreshRTWDOGTimer(void) {
 	DisableInterrupts; // disable global interrupt
@@ -74,18 +73,20 @@ void resetRTWDOG(void) {
 	WDOG_CS = RESET_RTWDOG; // disable the watchdog by unsetting the WDOG_CS[EN]
 	EnableInterrupts; // enable global interrupt
 }
+
 /**
- * Function to pass down status of GNC task. If task completed successfully, refresh the RTWDOG
+ * Function to pass down status of idle task. If task completed successfully, refresh the RTWDOG
  * Void function for now, but plan is to pass down a flag from idle task saying it completed successfully,
  * and if it is high, then refresh the WDOG
  */
 void idleTaskRTWDOGRefreshTest(void) {
 	/* pseudo-code for the idle task refresh test */
-	if (idleTaskSuccessful and timeIsAsExpected) {
+
+	/* if (idleTaskSuccessful and timeIsAsExpected) {
 		refreshRTWDOGTimer();
 	} else {
 		// do not really need the else, as the RTWDOG should reset the MCU on its own if not refreshed after threshold time
-	}
+	} */
 }
 
 

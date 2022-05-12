@@ -32,6 +32,10 @@ bool g_rwaHealthy;
 bool g_imgHealthy;
 //uint8_t healthFlags; //bit flags: [img|rwa|mtq|gnc|sen|com|eps|obc]
 
+// flag that gets passed down to RTWDOG to check that idle task ran successfully
+uint8_t idle_flag;
+
+
 /*******************************************************************************
  * Function declarations
  ******************************************************************************/
@@ -291,6 +295,8 @@ void idle_task(void *pvParameters) {
 		idle_phase1(); //Commission Phase I Checks
 		idle_phase2(); //pdm decider
 		idle_phase3(); //health checks subsystem
+
+		idle_flag = 1; // raise the idle_flag saying that the idle task ran successfully, pass it down to RTWDOG
 
 		vTaskDelayUntil(&xLastWakeTime, xDelayms);
 	}

@@ -13,6 +13,13 @@
 #include "board.h"
 #include "fsl_rtwdog.h"
 
+#include "RTWDOG_PROTO.h"
+/* Include header files from the tasks to send flags to the watchdog timer */
+#include "idle_task.h"
+//#include "gnc_task.h"
+//#include "com_task.h"
+//#include "imag_task.h"
+
 /**
  * All of my personal defines here that I need. This is for RTWDOG refresh, RTWDOG config, etc.
  */
@@ -22,10 +29,10 @@
  * WDOG define that is non configurable unless there is a reset.
  * Window mode is off (subject to change), enable is on, interrupts are on, update is off, clk is BUS_CLK
  */
-#define ENABLE_WATCHDOG (WDOG_CS_EN(1) | WDOG_CS_CLK(0) | WDOG_CS_INT(1) | WDOG_CS_WIN(0) | WDOG_CS_UPDATE(0))
+#define ENABLE_WATCHDOG (RTWDOG_CS_EN(1) | RTWDOG_CS_CLK(0) | RTWDOG_CS_INT(1) | RTWDOG_CS_WIN(0) | RTWDOG_CS_UPDATE(0))
 
 /* Mask to reset the RTWDOG. Must set it equal to WDOG_CS to reset the RTWDOG */
-#define RESET_RTWDOG (WDOG_CS & ~WDOG_CS_EN_MASK)
+#define RESET_RTWDOG (RTWDOG_CS & ~RTWDOG_CS_EN_MASK)
 
 /**
  * Value to refresh the RTWDOG written to the CNT register.
@@ -35,11 +42,21 @@
  */
 #define REFRESH_RTWDOG 0xB480A602
 
-/* Prototypes for functions made below */
-void setUpWDOG(void);
-void refreshRTWDOGTimer(void);
-void resetRTWDOG(void);
-void idleTaskRTWDOGRefreshTest(void);
+
+
+/**
+ * Function that monitors the refresh of the watchdog. Refreshes if the idle_flag is received as expected
+ * If the RTWDOG is not refreshed by the time the countdown timer ends, then it resets the MCU
+ */
+void RTWDOG_IRQ_Handler_Idle(uint8_t idle_successful) {
+	if (idle_successful) {
+		refreshRTWDOGTimer();
+	}
+	idle_flag = 0; // reset the idle flag.
+}
+
+
+
 
 /**
  * Unlock sequence written to CNT register, must be within 16 bus clocks at any time after
@@ -49,8 +66,8 @@ void setUpWDOG(void) {
 	DisableInterrupts; // disable global interrupt
 	RTWDOG_CNT = UNLOCK_RTWDOG; // unlock the RTWDOG
 	// while (RTWDOG_CS[ULK] == 0); // wait until registers are unlocked              * not too sure what this does?
-	WDOG_TOVAL = 256; // Set the timeout value                                        * Need to change to be what the team wants/needs
-	WDOG_CS = ENABLE_WATCHDOG; // unlock the RTWDOG with desired configuration
+	RTWDOG_TOVAL = 256; // Set the timeout value                                        * Need to change to be what the team wants/needs
+	RTWDOG_CS = ENABLE_WATCHDOG; // unlock the RTWDOG with desired configuration
 	// while (WDOG_CS[RCS] == 0); // wait until new configuration takes effect        * not too sure what this does?
 	EnableInterrupts; // re-enable the global interrupt
 }
@@ -60,17 +77,19 @@ void setUpWDOG(void) {
  */
 void refreshRTWDOGTimer(void) {
 	DisableInterrupts; // disable global interrupt
-	WDOG_CNT = REFRESH_RTWDOG; // refresh the RTWDOG
+	RTWDOG_CNT = REFRESH_RTWDOG; // refresh the RTWDOG
 	EnableInterrupts; // enable the global interrupt
 }
 
 /**
- * Function to disable/reset the RTWDOG
+ * Function to disable/reset the RTWDOG.
+ * Resetting the watchdog is required if there is need to reconfigure it,
+ * if the CS_UPDATE register is low
  */
 void resetRTWDOG(void) {
 	DisableInterrupts; // disable global interrupt
-	WDOG_CNT = UNLOCK_RTWDOG; // unlocks the RTWDOG
-	WDOG_CS = RESET_RTWDOG; // disable the watchdog by unsetting the WDOG_CS[EN]
+	RTWDOG_CNT = UNLOCK_RTWDOG; // unlocks the RTWDOG
+	RTWDOG_CS = RESET_RTWDOG; // disable the watchdog by unsetting the WDOG_CS[EN]
 	EnableInterrupts; // enable global interrupt
 }
 
@@ -107,17 +126,7 @@ int main(void) {
     /* Init FSL debug console. */
     BOARD_InitDebugConsole();
 #endif
+    RTWDOG_IRQ_Handler_Idle(idle_flag);
 
-    PRINTF("Hello World\n");
-
-    /* Force the counter to be placed into memory. */
-    volatile static int i = 0 ;
-    /* Enter an infinite loop, just incrementing a counter. */
-    while(1) {
-        i++ ;
-        /* 'Dummy' NOP to allow source level single stepping of
-            tight while() loop */
-        __asm volatile ("nop");
-    }
     return 0 ;
 }

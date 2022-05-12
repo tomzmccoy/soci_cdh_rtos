@@ -19,7 +19,7 @@ extern bool rwaHealthy;
 extern bool imgHealthy;
 
 extern int operatingMode;
-
+extern uint8_t idle_task;
 
 
 enum PowerMode {

@@ -1,6 +1,8 @@
 /**
  * RTWDOG prototype currently in progress to function for idle/EPS task
  * Default clock: RTWDOG_CS[CLK] = BUS_CLK
+ * RTWDOG must be reset before it times out, otherwise the RTWDOG
+ * forcefully resets the MCU
  */
 
 /**

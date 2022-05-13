@@ -35,7 +35,6 @@ bool g_imgHealthy;
 // flag that gets passed down to RTWDOG to check that idle task ran successfully
 uint8_t idle_flag;
 
-
 /*******************************************************************************
  * Function declarations
  ******************************************************************************/

@@ -14,7 +14,7 @@
 #include "fsl_rtwdog.h"
 
 #include "RTWDOG_PROTO.h"
-/* Include header files from the tasks to send flags to the watchdog timer */
+/* Include header files from the tasks to send flags to the RTWDOG timer */
 #include "idle_task.h"
 //#include "gnc_task.h"
 //#include "com_task.h"
@@ -56,8 +56,6 @@ void RTWDOG_IRQ_Handler_Idle(uint8_t idle_successful) {
 }
 
 
-
-
 /**
  * Unlock sequence written to CNT register, must be within 16 bus clocks at any time after
  * RTWDOG has been configured
@@ -66,7 +64,7 @@ void setUpWDOG(void) {
 	DisableInterrupts; // disable global interrupt
 	RTWDOG_CNT = UNLOCK_RTWDOG; // unlock the RTWDOG
 	// while (RTWDOG_CS[ULK] == 0); // wait until registers are unlocked              * not too sure what this does?
-	RTWDOG_TOVAL = 256; // Set the timeout value                                        * Need to change to be what the team wants/needs
+	RTWDOG_TOVAL = 256; // Set the timeout value                                      * Need to change to be what the team wants/needs. I do not know how fast this clock is, most likely bad value
 	RTWDOG_CS = ENABLE_WATCHDOG; // unlock the RTWDOG with desired configuration
 	// while (WDOG_CS[RCS] == 0); // wait until new configuration takes effect        * not too sure what this does?
 	EnableInterrupts; // re-enable the global interrupt
@@ -83,13 +81,13 @@ void refreshRTWDOGTimer(void) {
 
 /**
  * Function to disable/reset the RTWDOG.
- * Resetting the watchdog is required if there is need to reconfigure it,
+ * Resetting the RTWDOG is required if there is need to reconfigure it,
  * if the CS_UPDATE register is low
  */
 void resetRTWDOG(void) {
 	DisableInterrupts; // disable global interrupt
 	RTWDOG_CNT = UNLOCK_RTWDOG; // unlocks the RTWDOG
-	RTWDOG_CS = RESET_RTWDOG; // disable the watchdog by unsetting the WDOG_CS[EN]
+	RTWDOG_CS = RESET_RTWDOG; // disable the RTWDOG by turning off WDOG_CS[EN]
 	EnableInterrupts; // enable global interrupt
 }
 
@@ -126,7 +124,9 @@ int main(void) {
     /* Init FSL debug console. */
     BOARD_InitDebugConsole();
 #endif
-    RTWDOG_IRQ_Handler_Idle(idle_flag);
 
+#if // need some sort of check here that says when to check the idle_flag. Because if constantly being checked, could cause unnecessary MCU reset
+    RTWDOG_IRQ_Handler_Idle(idle_flag);
+#endif
     return 0 ;
 }

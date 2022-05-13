@@ -21,7 +21,6 @@ extern bool imgHealthy;
 extern int operatingMode;
 extern uint8_t idle_task;
 
-
 enum PowerMode {
 	CRIT_LOW_POWER = 0,
 	LOW_POWER = 1,

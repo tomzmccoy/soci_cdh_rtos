@@ -4,6 +4,11 @@
  * RTWDOG must be reset before it times out, otherwise the RTWDOG
  * forcefully resets the MCU
  */
+/**
+ * Need to make a fastRefreshTest that initializes the RTWDOG with the proper delays.
+ * Essentially replicating what was in the example.
+ */
+
 
 /**
  * @file    RTWDOG_PROTO.c

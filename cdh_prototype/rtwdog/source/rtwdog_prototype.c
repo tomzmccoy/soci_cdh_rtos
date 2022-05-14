@@ -9,9 +9,13 @@
  * Essentially replicating what was in the example.
  */
 
+/**
+ * Need to add constants that will flag when to run the RTWDOG initialization
+ * so as not to have it run prematurely and break
+ */
 
 /**
- * @file    RTWDOG_PROTO.c
+ * @file    rtwdog_prototype.c
  * @brief   Application entry point.
  */
 #include "fsl_debug_console.h" // PRINTF statement
@@ -133,7 +137,7 @@ int main(void) {
 #endif
 
 #if // need some sort of check here that says when to check the idle_flag. Because if constantly being checked, could cause unnecessary MCU reset
-    RTWDOG_IRQ_Handler_Idle(idle_flag);
+    // RTWDOG_IRQ_Handler_Idle(idle_flag);
 #endif
     return 0 ;
 }

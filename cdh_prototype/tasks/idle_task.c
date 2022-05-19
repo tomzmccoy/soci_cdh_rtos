@@ -12,6 +12,7 @@
 #include "lpm.h"
 #include "power_mode_switch.h"
 #include "specific.h"
+#include "RTWDOG_PROTO.h"
 
 /*******************************************************************************
  * Flags
@@ -295,8 +296,8 @@ void idle_task(void *pvParameters) {
 		idle_phase2(); //pdm decider
 		idle_phase3(); //health checks subsystem
 
-		idle_flag = 1; // raise the idle_flag saying that the idle task ran successfully, pass it down to RTWDOG
-
+		idle_flag = 1; // raise the idle_flag saying that the idle task ran successfully
+		refreshRTWDOGTimer(); // refresh the RTWDOG timer to prevent MCU reset
 		vTaskDelayUntil(&xLastWakeTime, xDelayms);
 	}
 #else

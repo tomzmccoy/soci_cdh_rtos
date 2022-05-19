@@ -45,6 +45,7 @@
 /* Mask to reset the RTWDOG. Must set it equal to WDOG_CS to reset the RTWDOG */
 #define RESET_RTWDOG (RTWDOG_CS & ~RTWDOG_CS_EN_MASK)
 
+
 /**
  * Value to refresh the RTWDOG written to the CNT register.
  * Written as one 32-bit write instead of two 16-bit writes.
@@ -52,8 +53,9 @@
  * otherwise, the RTWDOG resets the MCU
  */
 #define REFRESH_RTWDOG 0xB480A602
+#define RTWDOG_BASE RTWDOG
 
-
+static rtwdog_config_t config;
 
 /**
  * Function that monitors the refresh of the watchdog. Refreshes if the idle_flag is received as expected
@@ -75,7 +77,7 @@ void setUpWDOG(void) {
 	DisableInterrupts; // disable global interrupt
 	RTWDOG_CNT = UNLOCK_RTWDOG; // unlock the RTWDOG
 	// while (RTWDOG_CS[ULK] == 0); // wait until registers are unlocked              * not too sure what this does?
-	RTWDOG_TOVAL = 256; // Set the timeout value                                      * Need to change to be what the team wants/needs. I do not know how fast this clock is, most likely bad value
+	RTWDOG_TOVAL = 256; // Set the timeout value                                   // 40 kHz clock? (TOVAL = 2,400,000 clock ticks)
 	RTWDOG_CS = ENABLE_WATCHDOG; // unlock the RTWDOG with desired configuration
 	// while (WDOG_CS[RCS] == 0); // wait until new configuration takes effect        * not too sure what this does?
 	EnableInterrupts; // re-enable the global interrupt
@@ -117,7 +119,37 @@ void idleTaskRTWDOGRefreshTest(void) {
 	} */
 }
 
+void initializeRTWDOG(void) {
+    uint32_t temp;
 
+	/* When system is boot up, WDOG32 is disabled. We must wait for at least 2.5
+     * periods of wdog32 clock to reconfigure wodg32. So Delay a while to wait for
+     * the previous configuration taking effect. */
+    for (temp = 0; temp < DELAY_TIME; temp++)
+    {
+        __NOP();
+    }
+
+    /*
+     * config.enableWdog32 = true;
+     * config.clockSource = kWDOG32_ClockSource1;
+     * config.prescaler = kWDOG32_ClockPrescalerDivide1;
+     * config.testMode = kWDOG32_TestModeDisabled;
+     * config.enableUpdate = true;
+     * config.enableInterrupt = false;
+     * config.enableWindowMode = false;
+     * config.windowValue = 0U;
+     * config.timeoutValue = 0xFFFFU;
+     */
+    RTWDOG_GetDefaultConfig(&config);
+    config.enableInterrupt = true;
+
+    config.timeoutValue = 0x249F00U;     // set the timeOut value to 1 minute for a 40kHz clock
+    config.prescaler    = kRTWDOG_ClockPrescalerDivide256;
+
+    /* initialize the rtwdog timer */
+    RTWDOG_Init(RTWDOG_BASE, &config);
+}
 
 
 

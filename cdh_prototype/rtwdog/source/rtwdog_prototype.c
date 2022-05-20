@@ -18,42 +18,11 @@
  * @file    rtwdog_prototype.c
  * @brief   Application entry point.
  */
-#include "fsl_debug_console.h" // PRINTF statement
-#include "pin_mux.h"
-#include "clock_config.h"
-#include "board.h"
-#include "fsl_rtwdog.h"
+
 
 #include "RTWDOG_PROTO.h"
-/* Include header files from the tasks to send flags to the RTWDOG timer */
-#include "idle_task.h"
-//#include "gnc_task.h"
-//#include "com_task.h"
-//#include "imag_task.h"
+#define DELAY_TIME 0x12A05F20 // 2.5 seconds on a 125 MHz clock
 
-/**
- * All of my personal defines here that I need. This is for RTWDOG refresh, RTWDOG config, etc.
- */
-#define UNLOCK_RTWDOG (0xD928C520) // unlock sequence to be written to CNT register
-
-/**
- * WDOG define that is non configurable unless there is a reset.
- * Window mode is off (subject to change), enable is on, interrupts are on, update is off, clk is BUS_CLK
- */
-#define ENABLE_WATCHDOG (RTWDOG_CS_EN(1) | RTWDOG_CS_CLK(0) | RTWDOG_CS_INT(1) | RTWDOG_CS_WIN(0) | RTWDOG_CS_UPDATE(0))
-
-/* Mask to reset the RTWDOG. Must set it equal to WDOG_CS to reset the RTWDOG */
-#define RESET_RTWDOG (RTWDOG_CS & ~RTWDOG_CS_EN_MASK)
-
-
-/**
- * Value to refresh the RTWDOG written to the CNT register.
- * Written as one 32-bit write instead of two 16-bit writes.
- * The refresh sequence must occur before the WDG timeout;
- * otherwise, the RTWDOG resets the MCU
- */
-#define REFRESH_RTWDOG 0xB480A602
-#define RTWDOG_BASE RTWDOG
 
 static rtwdog_config_t config;
 
@@ -143,12 +112,15 @@ void initializeRTWDOG(void) {
      */
     RTWDOG_GetDefaultConfig(&config);
     config.enableInterrupt = true;
-
-    config.timeoutValue = 0x249F00U;     // set the timeOut value to 1 minute for a 40kHz clock
+    config.clockSource = kWDOG32_ClockSource0; // change to 125 MHz bus clock
+    config.timeoutValue = 0xDF847580;     // set the timeout value to 30 secs for 125 MHz bus clock
     config.prescaler    = kRTWDOG_ClockPrescalerDivide256;
 
     /* initialize the rtwdog timer */
     RTWDOG_Init(RTWDOG_BASE, &config);
+
+
+    // calling refresh function in the idle_task. Trouble with the IDE...
 }
 
 
@@ -168,8 +140,6 @@ int main(void) {
     BOARD_InitDebugConsole();
 #endif
 
-#if // need some sort of check here that says when to check the idle_flag. Because if constantly being checked, could cause unnecessary MCU reset
-    // RTWDOG_IRQ_Handler_Idle(idle_flag);
-#endif
+    initializeRTWDOG();
     return 0 ;
 }

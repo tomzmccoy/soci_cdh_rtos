@@ -114,7 +114,7 @@ void initializeRTWDOG(void) {
     config.enableInterrupt = true;
     config.clockSource = kWDOG32_ClockSource0; // change to 125 MHz bus clock
     config.timeoutValue = 0xDF847580;     // set the timeout value to 30 secs for 125 MHz bus clock
-    config.prescaler    = kRTWDOG_ClockPrescalerDivide256;
+    config.prescaler    = kRTWDOG_ClockPrescalerDivide256; // prescaler to increase the timeout value
 
     /* initialize the rtwdog timer */
     RTWDOG_Init(RTWDOG_BASE, &config);

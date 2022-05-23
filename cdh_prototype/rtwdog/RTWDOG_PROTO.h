@@ -30,16 +30,13 @@
  * otherwise, the RTWDOG resets the MCU
  */
 #define REFRESH_RTWDOG 0xB480A602
-#define RTWDOG_BASE RTWDOG
+//#define RTWDOG_BASE RTWDOG
+#define RTWDOG_ENABLE 1
 
 /* Prototypes for functions made below */
-void setUpWDOG(void);
-void refreshRTWDOGTimer(void);
-void resetRTWDOG(void);
-void idleTaskRTWDOGRefreshTest(void);
-void RTWDOG_IRQ_Handler_Idle(uint8_t idle_flag);
+void initializeRTWDOG(void);
 
-#define DELAY_TIME 0x12A05F20 // 2.5 seconds on a 125 MHz clock
+#define DELAY_TIME 0x140 // 2.5 seconds on a 32kHz/256 clock
 
 
 #endif

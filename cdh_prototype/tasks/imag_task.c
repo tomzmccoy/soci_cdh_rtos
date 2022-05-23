@@ -19,7 +19,7 @@ extern uint8_t IMG_param; //TODO: what does img command look like?
 void imag_task(void *pvParameters)
 {
 	const TickType_t xDelayms = pdMS_TO_TICKS( 500 ); //delay 500 ms
-	TickType_t xLastWakeTime = xTaskGetTickCount(); // gets the last wake time
+	//TickType_t xLastWakeTime = xTaskGetTickCount(); // gets the last wake time
 	PRINTF("\ninitialize imag.\r\n");
     // sdram example
 //    memset(sdram_writeBuffer, 0, sizeof(sdram_writeBuffer));

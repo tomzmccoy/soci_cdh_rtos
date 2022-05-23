@@ -271,7 +271,13 @@ static void idle_phase3() {
 /* The main operation of the idle task: */
 void idle_task(void *pvParameters) {
 	const TickType_t xDelayms = pdMS_TO_TICKS( 500 ); //delay 500 ms
-	PRINTF("idle task initialization");
+	TickType_t xLastWakeTime;
+	//PRINTF("idle task initialization");
+#if RTWDOG_ENABLE
+	initializeRTWDOG();
+	RTWDOG_Enable(RTWDOG);
+	PRINTF("INIT RTWDOG\r\n");
+#endif
 #if IDLE_ENABLE
 	//TODO: (1) when booting up, only turn on PDM of GNC (i.e. CLPM mode, no subsystem should be init already).
 	//			(1-1) do health checks in CLPM mode, init GNC and run GNC once.
@@ -298,15 +304,13 @@ void idle_task(void *pvParameters) {
 		idle_phase3(); //health checks subsystem
 
 		idle_flag = 1; // raise the idle_flag saying that the idle task ran successfully
-		RTWDOG_Refresh(RTWDOG_BASE);
-		vTaskDelayUntil(&xLastWakeTime, xDelayms);
-	}
 #else
 	resetPriority(TaskHandler_idle); //resetting priority of idle task to 0, now GNC(3), COM(2-suspended), IMG(1-suspended), IDLE(0)
 	vTaskDelay(xDelayms);
 	operatingMode = CRIT_LOW_POWER;
 	LPM_Init(s_curRunMode);
 	for(;;){
+		xLastWakeTime = xTaskGetTickCount(); // gets the last wake time
 		PRINTF("idle task loop\r\n");
 //		SEMC_SDRAMCR3_REN(1);
 //		SEMC_IPCMD_CMD(0xA55A000D);
@@ -314,6 +318,14 @@ void idle_task(void *pvParameters) {
 //		APP_PrintRunFrequency(0);
 //		SEMC_IPCMD_CMD(0xA55A000A);
 //		vTaskDelay(xDelayms);
-	}
 #endif
+#if RTWDOG_ENABLE
+		RTWDOG_Refresh(RTWDOG); // should refresh the rtwdog and let the task continue running as expected
+		PRINTF("refresh\r\n");
+		for(int i=0; i<99999; i++) {
+			PRINTF("");
+		}
+#endif
+		vTaskDelayUntil(&xLastWakeTime, xDelayms);
+	}
 }

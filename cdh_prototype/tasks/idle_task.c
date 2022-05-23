@@ -298,7 +298,7 @@ void idle_task(void *pvParameters) {
 		idle_phase3(); //health checks subsystem
 
 		idle_flag = 1; // raise the idle_flag saying that the idle task ran successfully
-		refreshRTWDOGTimer();
+		RTWDOG_Refresh(RTWDOG_BASE);
 		vTaskDelayUntil(&xLastWakeTime, xDelayms);
 	}
 #else

@@ -39,7 +39,7 @@ void resetRTWDOG(void);
 void idleTaskRTWDOGRefreshTest(void);
 void RTWDOG_IRQ_Handler_Idle(uint8_t idle_flag);
 
-
+#define DELAY_TIME 0x12A05F20 // 2.5 seconds on a 125 MHz clock
 
 
 #endif

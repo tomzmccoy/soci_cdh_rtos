@@ -21,7 +21,7 @@
 
 
 #include "RTWDOG_PROTO.h"
-#define DELAY_TIME 0x12A05F20 // 2.5 seconds on a 125 MHz clock
+
 
 
 static rtwdog_config_t config;
@@ -120,7 +120,11 @@ void initializeRTWDOG(void) {
     RTWDOG_Init(RTWDOG_BASE, &config);
 
 
-    // calling refresh function in the idle_task. Trouble with the IDE...
+    // calling refresh function in the idle_task.
+    // 1. what do i need the interrupt handler for and what exactly is it doing by
+    // clearing those flags?
+
+    // 2. Do I need all those preprocessor flags or just always initialize it?
 }
 
 

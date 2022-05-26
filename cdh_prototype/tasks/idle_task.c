@@ -274,9 +274,10 @@ void idle_task(void *pvParameters) {
 	TickType_t xLastWakeTime;
 	//PRINTF("idle task initialization");
 #if RTWDOG_ENABLE
-	initializeRTWDOG();
-	RTWDOG_Enable(RTWDOG);
+	// initializeRTWDOG();
+
 	PRINTF("INIT RTWDOG\r\n");
+
 #endif
 #if IDLE_ENABLE
 	//TODO: (1) when booting up, only turn on PDM of GNC (i.e. CLPM mode, no subsystem should be init already).
@@ -320,11 +321,18 @@ void idle_task(void *pvParameters) {
 //		vTaskDelay(xDelayms);
 #endif
 #if RTWDOG_ENABLE
-		RTWDOG_Refresh(RTWDOG); // should refresh the rtwdog and let the task continue running as expected
-		PRINTF("refresh\r\n");
-		for(int i=0; i<99999; i++) {
+		uint16_t counterValueRTWDOGPre = RTWDOG_GetCounterValue(RTWDOG);
+		PRINTF("Current RTWDOG counter value before refresh: %u\r\n", counterValueRTWDOGPre); // value before refresh
+		for(int i=0; i<25; i++) {
 			PRINTF("");
 		}
+
+		RTWDOG_Refresh(RTWDOG); // should refresh the rtwdog and let the task continue running as expected
+		PRINTF("refresh\r\n");
+		uint16_t counterValueRTWDOGPost = RTWDOG_GetCounterValue(RTWDOG);
+		PRINTF("Current RTWDOG counter value after refresh: %u\r\n", counterValueRTWDOGPost);
+
+
 #endif
 		vTaskDelayUntil(&xLastWakeTime, xDelayms);
 	}

@@ -11,15 +11,15 @@ static rtwdog_config_t config;
 
 void initializeRTWDOG(void) {
 
-	// CLOCK_EnableClock(kCLOCK_Wdog3);
+	uint16_t temp;
 	/* When system is boot up, WDOG32 is disabled. We must wait for at least 2.5
      * periods of wdog32 clock to reconfigure wodg32. So Delay a while to wait for
      * the previous configuration taking effect. */
 	/* DELAY_TIME = 0x140 ~ 2.5 seconds */
-//    for (temp = 0; temp < DELAY_TIME; temp++)
-//    {
-//        __NOP();
-//    }
+    for (temp = 0; temp < DELAY_TIME; temp++)
+    {
+        __NOP();
+    }
     /**
      * config->enableRtwdog         = true;
      * config->clockSource          = kRTWDOG_ClockSource1;
@@ -35,7 +35,7 @@ void initializeRTWDOG(void) {
      * config->timeoutValue         = 0xFFFFU;
     */
     RTWDOG_GetDefaultConfig(&config);
-    config.timeoutValue = 0x0180U;     // set the timeout value to 3 secs for prescaled 32kHz clock1
+    config.timeoutValue = 0x00C0U;     // set the timeout value to 3 secs for prescaled 32kHz clock1
     // config.timeoutValue = 0x00C0U;     // set the timeout value to 3 secs for prescaled 32kHz clock1
     config.prescaler    = kRTWDOG_ClockPrescalerDivide256; // prescaler to increase the timeout value ((32.768 * 10^3) / 256)
     /* initialize the rtwdog timer */

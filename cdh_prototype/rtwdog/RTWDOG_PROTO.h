@@ -36,7 +36,7 @@
 /* Prototypes for functions made below */
 void initializeRTWDOG(void);
 
-#define DELAY_TIME 0x140 // 2.5 seconds on a 32kHz/256 clock
+#define DELAY_TIME 0x00A0U // 2.5 seconds on a 32kHz/256 clock
 
 
 #endif

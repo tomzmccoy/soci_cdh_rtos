@@ -4,9 +4,6 @@
  */
 
 #include "RTWDOG_PROTO.h"
-
-
-
 static rtwdog_config_t config;
 
 void initializeRTWDOG(void) {
@@ -34,12 +31,11 @@ void initializeRTWDOG(void) {
      * config->windowValue          = 0U;
      * config->timeoutValue         = 0xFFFFU;
     */
-    RTWDOG_GetDefaultConfig(&config);
+    RTWDOG_GetDefaultConfig(&config); // get the default configuration of rtwdog
     config.timeoutValue = 0x00C0U;     // set the timeout value to 3 secs for prescaled 32kHz clock1
-    // config.timeoutValue = 0x00C0U;     // set the timeout value to 3 secs for prescaled 32kHz clock1
     config.prescaler    = kRTWDOG_ClockPrescalerDivide256; // prescaler to increase the timeout value ((32.768 * 10^3) / 256)
-    /* initialize the rtwdog timer */
-
+    /* initialize the rtwdog timer.
+     *  To be called in main()
+     */
     RTWDOG_Init(RTWDOG, &config);
-
 }

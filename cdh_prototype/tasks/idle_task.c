@@ -327,10 +327,10 @@ void idle_task(void *pvParameters) {
 			PRINTF("");
 		}
 
-		// RTWDOG_Refresh(RTWDOG); // should refresh the rtwdog and let the task continue running as expected
-		// PRINTF("refresh\r\n");
-		// uint16_t counterValueRTWDOGPost = RTWDOG_GetCounterValue(RTWDOG);
-		// PRINTF("Current RTWDOG counter value after refresh: %u\r\n", counterValueRTWDOGPost);
+		 // RTWDOG_Refresh(RTWDOG); // should refresh the rtwdog and let the task continue running as expected
+//		 PRINTF("refresh\r\n");
+//		 uint16_t counterValueRTWDOGPost = RTWDOG_GetCounterValue(RTWDOG);
+//		 PRINTF("Current RTWDOG counter value after refresh: %u\r\n", counterValueRTWDOGPost);
 
 
 #endif

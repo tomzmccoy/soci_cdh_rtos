@@ -35,8 +35,9 @@ void initializeRTWDOG(void) {
     config.timeoutValue = 0x0180U;     // set the timeout value to 3 secs for prescaled 32kHz clock1
     config.prescaler    = kRTWDOG_ClockPrescalerDivide256; // prescaler to increase the timeout value ((32.768 * 10^3) / 256)
     config.workMode.enableWait  = false;
+    config.workMode.enableDebug = true;
     // config.workMode.enableStop = true;
-    // config.workMode.enableDebug = true;
+
     /* initialize the rtwdog timer.
      *  To be called in main()
      */

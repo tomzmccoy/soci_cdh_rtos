@@ -20,7 +20,7 @@
 #include "pin_mux.h"
 #include "clock_config.h"
 #include "board.h"
-//#include "fsl_gpio.h"
+#include "fsl_gpio.h"
 
 /* Peripherals includes. */
 //#include "fsl_lpuart_freertos.h"
@@ -59,11 +59,11 @@
  * @brief Application entry point.
  */
 
-//#define EXAMPLE_LED_GPIO     BOARD_USER_LED_GPIO
-//#define EXAMPLE_LED_GPIO_PIN BOARD_USER_LED_GPIO_PIN
-//
-///* The PIN status */
-//volatile bool g_pinSet = false;
+#define EXAMPLE_LED_GPIO     BOARD_USER_LED_GPIO
+#define EXAMPLE_LED_GPIO_PIN BOARD_USER_LED_GPIO_PIN
+
+/* The PIN status */
+volatile bool g_pinSet = false;
 
 //mTask handlers declared in each task files in tasks folder.
 extern TaskHandle_t TaskHandler_idle;
@@ -84,33 +84,33 @@ int main(void)
     BOARD_InitPeripherals();
 
     initializeRTWDOG();
-//    /* Define the init structure for the output LED pin*/
-//    gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
-//    /* Print a note to terminal. */
-//	PRINTF("\r\n GPIO Driver example\r\n");
-//	PRINTF("\r\n The LED is blinking.\r\n");
-//
-//	/* Init output LED GPIO. */
-//	GPIO_PinInit(EXAMPLE_LED_GPIO, EXAMPLE_LED_GPIO_PIN, &led_config);
-//
-//	while (1)
-//	{
-//		SDK_DelayAtLeastUs(100000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
-//#if (defined(FSL_FEATURE_IGPIO_HAS_DR_TOGGLE) && (FSL_FEATURE_IGPIO_HAS_DR_TOGGLE == 1))
-//		GPIO_PortToggle(EXAMPLE_LED_GPIO, 1u << EXAMPLE_LED_GPIO_PIN);
-//#else
-//		if (g_pinSet)
-//		{
-//			GPIO_PinWrite(EXAMPLE_LED_GPIO, EXAMPLE_LED_GPIO_PIN, 0U);
-//			g_pinSet = false;
-//		}
-//		else
-//		{
-//			GPIO_PinWrite(EXAMPLE_LED_GPIO, EXAMPLE_LED_GPIO_PIN, 1U);
-//			g_pinSet = true;
-//		}
-//#endif /* FSL_FEATURE_IGPIO_HAS_DR_TOGGLE */
-//	}
+    /* Define the init structure for the output LED pin*/
+    gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
+    /* Print a note to terminal. */
+	PRINTF("\r\n GPIO Driver example\r\n");
+	PRINTF("\r\n The LED is blinking.\r\n");
+
+	/* Init output LED GPIO. */
+	GPIO_PinInit(EXAMPLE_LED_GPIO, EXAMPLE_LED_GPIO_PIN, &led_config);
+
+	while (1)
+	{
+		SDK_DelayAtLeastUs(100000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+#if (defined(FSL_FEATURE_IGPIO_HAS_DR_TOGGLE) && (FSL_FEATURE_IGPIO_HAS_DR_TOGGLE == 1))
+		GPIO_PortToggle(EXAMPLE_LED_GPIO, 1u << EXAMPLE_LED_GPIO_PIN);
+#else
+		if (g_pinSet)
+		{
+			GPIO_PinWrite(EXAMPLE_LED_GPIO, EXAMPLE_LED_GPIO_PIN, 0U);
+			g_pinSet = false;
+		}
+		else
+		{
+			GPIO_PinWrite(EXAMPLE_LED_GPIO, EXAMPLE_LED_GPIO_PIN, 1U);
+			g_pinSet = true;
+		}
+#endif /* FSL_FEATURE_IGPIO_HAS_DR_TOGGLE */
+	}
 
 
 

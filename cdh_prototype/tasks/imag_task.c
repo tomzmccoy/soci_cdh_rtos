@@ -1,132 +1,97 @@
+//TODO: tell Lachlan to extern the recv_buff in wrapper.
+//TODO:
 //interact with the sdram, when we getPicture from IMG, store it in sdram, and retrieve the image from sdram to send to the MCC
-#include "telemetry.h"
-#include "img_wrap.h"
-#include "imag_task.h"
-#include "com_protocol_helper.h"
 
-//static uint8_t recv_buffer[5]; // Receive 5 bytes
+#include <img_wrap.h>
+#include "imag_task.h"
+#include "semc_sdram.h"
+#include <stdbool.h>
+
+// delete those
+#include "com_protocol_helper.h"
+#include "peripherals.h"
 
 TaskHandle_t TaskHandler_img;
-extern uint8_t IMG_command; //TODO: what does img command look like?
-extern uint8_t IMG_param; //TODO: what does img command look like?
-uint8_t image_CIA[IMG_SIZE];
+
+uint8_t IMG_command = 5; //hard coded test command
+uint8_t IMG_param = 0; //hard coded test param
+IMG_system_response responseStatus;
+
+//uint8_t UART4RingBuffer[UART4_RING_BUFFER_SIZE];
+lpuart_handle_t lpuart4Handle;
+
+// UART send buffer
+volatile bool newCommandFlag = 1; // default should be 0, set to 1 for testing purpose
+
+volatile bool responseReceivedFlag = 0;
 
 //TODO: need to go over the operation of IMG and the wrappers to lay out the functions in this task
 void imag_task(void *pvParameters)
 {
 	const TickType_t xDelayms = pdMS_TO_TICKS( 500 ); //delay 500 ms
-	//TickType_t xLastWakeTime = xTaskGetTickCount(); // gets the last wake time
-	PRINTF("\ninitialize imag.\r\n");
-
-
-#if QUEUE_DEMO_ENABLE
-	struct tel tel_COM;
-	uint8_t IMG_cmdID;
-
-	/* Create IMG Ring Buffer */
-	//cb_init(&IMG_PAYLOAD, 5, IMG_SIZE);
-
-	vTaskDelay(xDelayms);
-
-#endif
+	TickType_t xLastWakeTime = xTaskGetTickCount(); // gets the last wake time
 
 #if IMAG_ENABLE
+	PRINTF("\ninitialize imag.\r\n");
 //	imag_init();
 #endif
 	for (;;) {
-		PRINTF("IMG task loop\r\n");
-
-#if QUEUE_DEMO_ENABLE // Demo receives CMD from COM task and executes it
-		/* pseudocode*/
-		if( xQueueReceive( cmd_queue_IMG, &(IMG_cmdID), ( TickType_t ) 5 ) == pdPASS ) { // <- Instead of if(new command flag)
-			// execute IMG cmd
-			PRINTF("IMG task received %d cmd\r\n", IMG_cmdID);
-			switch (IMG_cmdID) {
-				/* goal is to set communication between com and img */
-				/*
-				 * cmd_queue_IMG = xQueueCreate( xQueue_len, sizeof(uint8_t));
-                 * cmd_queue_GNC = xQueueCreate( xQueue_len, sizeof(uint8_t));
-                 * cmd_queue_EPS = xQueueCreate( xQueue_len, sizeof(uint8_t));
-                 * tlm_queue_COM = xQueueCreate( xQueue_len, sizeof(uint8_t));
-				 */
-				case getPicture:
-					uint8_t cmdID;
-					uint8_t data_length;
-					uint8_t data;
-
-					// sets telemetry
-					image_CIA[IMG_SIZE] = set pictures;
-
-					if(success) {
-						cmdID = imgReady;
-						data_length = 1;
-						data = 1;
-					} else {
-						cmdID = imgReady;
-						data_length = 1;
-						data = 1;
-					}
-
-					//always send data in this format
-					//data_length + packetID + data
-					// 0 | getPicture
-					// sends telemetry to COM once image is prepped
-					xQueueSend( tlm_queue_COM, ( void * ) &(data_length), ( TickType_t ) 0 );
-					xQueueSend( queue_COM, ( void * ) &(cmdID)), ( TickType_t ) 0 );
-					xQueueSend( queue_COM, ( void * ) &(data)), ( TickType_t ) 0 );
-					break;
-				default:
-					break;
-			}
-		}
-		vTaskDelay(xDelayms);
-#endif
-
+		xLastWakeTime = xTaskGetTickCount();
 #if IMAG_ENABLE
-		PRINTF("\nimag work\r\n");
 		/* sending commands to IMG */
 		//use the commands from the MCC (retrieve from a queue of commands)
 		//determine what functions we want to call,
 		//send the commands and params to the function
-		switch (IMG_command) {
-			case CHECK_STATUS:
-				checkStatus(IMG_param);
-				break;
-			case TAKE_PICTURE:
-				takePicture(IMG_param);
-				break;
-			case GET_THUMBNAIL_SIZE:
-				getThumbnailSize(IMG_param);
-				break;
-			case GET_PICTURE_SIZE:
-				getPictureSize(IMG_param);
-				break;
-			case GET_THUMBNAIL:
-				getThumbnail(IMG_param);
-				break;
-			case GET_PICTURE:
-				getPicture(IMG_param);
-				break;
-			case SET_CONTRAST:
-				setContrast(IMG_param);
-				break;
-			case SET_BRIGHTNESS:
-				setBrightness(IMG_param);
-				break;
-			case SET_EXPOSURE:
-				setExposure(IMG_param);
-				break;
-			case SET_SLEEP_TIME:
-				setSleepTime(IMG_param);
-				break;
-			default:
-				PRINTF("IMG sendCommand UNKNOWN\r\n");
-				break;
+
+		// TODO: figure out how to issue new command and set the flag
+		//if (...)newCommandFlag = 1; send command
+
+
+		if (newCommandFlag) {
+		 	PRINTF("Sending command\r\n");
+		 	// Note: to get an image, system need to get its size first
+		 	//IMG_command = IMG_command == GET_PICTURE ? GET_PICTURE_SIZE : IMG_command;
+			sendCommand(IMG_command == GET_PICTURE ? GET_PICTURE_SIZE : IMG_command, IMG_param);
+			PRINTF("Waiting for response\r\n");
+			switch (IMG_command) {
+				case CHECK_STATUS:
+					responseStatus = checkStatus(IMG_param);
+					break;
+				case TAKE_PICTURE:
+					responseStatus = takePicture(IMG_param);
+					break;
+				case GET_PICTURE_SIZE:
+					responseStatus = getPictureSize(IMG_param);
+					break;
+				case GET_PICTURE:
+					responseStatus = getPicture(IMG_param);
+					break;
+				case SET_CONTRAST:
+					responseStatus = setContrast(IMG_param);
+					break;
+				case SET_BRIGHTNESS:
+					responseStatus = setBrightness(IMG_param);
+					break;
+				case SET_EXPOSURE:
+					responseStatus = setExposure(IMG_param);
+					break;
+				case SET_SLEEP_TIME:
+					responseStatus = setSleepTime(IMG_param);
+					break;
+				default:
+					PRINTF("Invalid command\r\n");
+					break;
+			}
+			PRINTF("Response from IMG system: %d\r\n", responseStatus);
+			newCommandFlag = 0;
 		}
+
 		vTaskSuspend( NULL );
 	}
 #else
-		vTaskDelay(xDelayms);
+		vTaskDelayUntil(&xLastWakeTime, xDelayms);
 	}
 #endif
 }
+
+
